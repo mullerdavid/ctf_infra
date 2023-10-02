@@ -9,6 +9,11 @@ variable "machine-type" {
   default = "e2-highmem-8"
 }
 
+variable "externaldisk" {
+  type = bool
+  default = false
+}
+
 variable "gcp_service_list" {
   type = list(string)
   default = [
@@ -40,6 +45,7 @@ resource "google_compute_subnetwork" "vpc-vulnbox-ipv6" {
 }
 
 resource "google_compute_disk" "disk-routerbox-data" {
+  count = var.externaldisk ? 1 : 0
   name  = "disk-routerbox-data"
   type  = "pd-standard"
   physical_block_size_bytes = 4096
@@ -73,16 +79,20 @@ resource "google_compute_instance" "vm-routerbox" {
   machine_type = var.machine-type
 
   boot_disk {
-    auto_delete = true
+    auto_delete = var.externaldisk
     initialize_params {
       image = "ubuntu-2204-lts"
-      size = 20
+      size = var.externaldisk ? 20 : 200
+      type = "pd-ssd"
     }
   }
 
-  attached_disk {
-    source = google_compute_disk.disk-routerbox-data.name
-    mode = "READ_WRITE"
+  dynamic "attached_disk" {
+    for_each = var.externaldisk ? [1] : []
+    content {
+      source = google_compute_disk.disk-routerbox-data[0].name
+      mode = "READ_WRITE"
+    }
   }
 
   network_interface {
@@ -105,7 +115,7 @@ resource "google_compute_instance" "vm-routerbox" {
     ssh-keys = join("\n",[
       #"root:ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCwCgYPjzHAfrWz8uRBjQ9kI0XaPUxyehRyU8WHOdv8utPWKlacAf6KbT5mWQXTMEqGeEoT0qxrQ1T0mYns6A8OmRrMD0Y1YkB31tKgNKVhGnzUiYGz7s2rBheQQ7S3crNmKADh6w1kSmvJSmNfNmOk5xETTKJHDzmlCZ89l15xNZ0+nXmyHBrJVrhFSKbljWTadjdQUu77mzCZXcH2uTnPpIlPk9ZzOjfGHZpycQ35sgGZi7X1O+QGd18b75ozPB5KhCyQcw1vLcxE+OliJQ4+qFxCBkllltLwiLCWPxpa3G64JxS93iy9FwKl/NvqAxoc4omZB8u7kE65PVQIIdmn root@routerbox",
       "root:${file("~/.ssh/id_rsa.pub")}",
-      "root:${tls_private_key.provision_ssh_key.public_key_openssh}"
+      "root:${tls_private_key.provision_ssh_key.public_key_openssh}",
     ])
   }
 
