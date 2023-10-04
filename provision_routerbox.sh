@@ -8,7 +8,7 @@ mount -a
 apt -y install tcpreplay
 mkdir /opt/capture
 chgrp tcpdump /opt/capture
-chmod g+w /opt/capture
+chmod g+rwx /opt/capture
 cat << EOF | tee /etc/systemd/system/tcpdump.service # -i is interface, -G is tick size in s, -C is filesize
 [Unit]
 Description="Systemd script for tcpdump"
