@@ -79,7 +79,7 @@ resource "google_compute_instance" "vm-routerbox" {
   machine_type = var.machine-type
 
   boot_disk {
-    auto_delete = var.externaldisk
+    #auto_delete = var.externaldisk
     initialize_params {
       image = "ubuntu-2204-lts"
       size = var.externaldisk ? 20 : 200
@@ -180,7 +180,7 @@ resource "google_compute_firewall" "default-allow-services" {
 
   allow {
     protocol = "tcp"
-    ports = [22, 8005, 8006]
+    ports = [22, 8005, 8006, 8007]
   }
 
   source_ranges = ["0.0.0.0/0"]
