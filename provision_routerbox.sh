@@ -19,7 +19,7 @@ cat << 'EOF' | tee run.sh
 cd /opt/packet_forward/pcap
 function process_pcap {
     filename=$1
-    newfilename="/tmp/${filename%.pcapng}.pcap"
+    newfilename="/opt/ctf_toolbox/_data/${filename%.pcapng}.pcap"
     if [[ ! -f "$newfilename" ]]; then
         filesize=$(stat -c%s "$filename")
         if [[ $filesize -gt 50000000 ]]; then
