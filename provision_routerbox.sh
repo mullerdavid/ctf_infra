@@ -24,7 +24,7 @@ function process_pcap {
         filesize=$(stat -c%s "$filename")
         if [[ $filesize -gt 50000000 ]]; then
             editcap -F libpcap "$filename" "$newfilename"
-            echo Crated "$newfilename"
+            echo Created "$newfilename"
         fi
     fi
 
